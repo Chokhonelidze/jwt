@@ -13,6 +13,7 @@ const corsWhitelist = [
     'http://localhost:5001',
     process.env.SERVER
 ];
+
 let headers = (req, res, next) => {
     // Website you wish to allow to connect
    //res.setHeader("Access-Control-Allow-Origin", "https://chokhonelidze.github.io/,http://localhost:5000,http://myhome.smho.site:5000");
@@ -56,7 +57,6 @@ mongoose.connect(DB, { useNewUrlParser: true }).then(() => {
           password:password
       }
       const isUser = await users.findOne(filter);
-      console.log(isUser);
       if(isUser && isUser.name) {
         const accessToken = jwt.sign({ username: isUser.name, role: isUser.role }, accessTokenSecret, { expiresIn: '20m' });
         const refreshToken = jwt.sign({ username: isUser.name, role: isUser.role }, refreshTokenSecret);
