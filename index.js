@@ -48,8 +48,8 @@ mongoose.connect(DB, { useNewUrlParser: true }).then(() => {
   const app = express();
   app.use(headers);
   app.use(bodyParser.json());
-  const refreshTokens = [];
-  app.post("/login",async (req, res) => {
+  let refreshTokens = [];
+  app.post("/login", async (req, res) => {
       const {name,password} = req.body;
       let filter = {
           name:name,
@@ -57,7 +57,7 @@ mongoose.connect(DB, { useNewUrlParser: true }).then(() => {
       }
       const isUser = await users.findOne(filter);
       console.log(isUser);
-      if(!isUser) {
+      if(isUser && isUser.name) {
         const accessToken = jwt.sign({ username: isUser.name, role: isUser.role }, accessTokenSecret, { expiresIn: '20m' });
         const refreshToken = jwt.sign({ username: isUser.name, role: isUser.role }, refreshTokenSecret);
         refreshTokens.push(refreshToken);
@@ -68,7 +68,7 @@ mongoose.connect(DB, { useNewUrlParser: true }).then(() => {
         });
       }
      else {
-        res.send('Username or password incorrect');
+        res.status(404).send('Username or password incorrect');
     } 
   });
   app.post('/token',async (req, res) => {
@@ -82,12 +82,12 @@ mongoose.connect(DB, { useNewUrlParser: true }).then(() => {
         return res.sendStatus(403);
     }
 
-    await jwt.verify(token, refreshTokenSecret, (err, user) => {
+    jwt.verify(token, refreshTokenSecret, async (err, user) => {
         if (err) {
             return res.sendStatus(403);
         }
 
-        const accessToken = jwt.sign({ username: user.username, role: user.role }, accessTokenSecret, { expiresIn: '20m' });
+        const accessToken = await jwt.sign({ username: user.username, role: user.role }, accessTokenSecret, { expiresIn: '20m' });
 
         res.json({
             accessToken
@@ -96,8 +96,8 @@ mongoose.connect(DB, { useNewUrlParser: true }).then(() => {
     
 });
 app.post('/logout', async (req, res) => {
-    const { token } = req.body;
-    refreshTokens = await refreshTokens.filter(token => t !== token);
+    const {token} = req.body;
+    refreshTokens = await refreshTokens.filter(t => t !== token);
 
     res.send("Logout successful");
 });
