@@ -5,14 +5,13 @@ const jwt = require('jsonwebtoken');
 
 const DB = process.env.DB;
 
-var PORT = process.env.PORT || process.env.PORT || 3001;
+var PORT = process.env.PORT  || 3001;
 var HOST = process.env.YOUR_HOST || '0.0.0.0';
 const mongoose = require("mongoose");
 const corsWhitelist = [
     'http://localhost:5000',
     'http://localhost:5001',
-    'http://localhost:3000',
-    process.env.SERVER
+    process.env.SERVER?process.env.SERVER:''
 ];
 
 let headers = (req, res, next) => {
@@ -65,37 +64,12 @@ mongoose.connect(DB, { useNewUrlParser: true }).then(() => {
 
         res.json({
             accessToken,
-            refreshToken,
-            'role':isUser.role,
+            refreshToken
         });
       }
      else {
         res.status(404).send('Username or password incorrect');
     } 
-  });
-  app.post('/loginEmail', async (req,res) => {
-    const {email,password} = req.body;
-    let filter = {
-        email:email,
-        password:password
-    }
-    const isUser = await users.findOne(filter);
-    if(isUser && isUser.name) {
-        const accessToken = jwt.sign({ username: isUser.name, role: isUser.role }, accessTokenSecret, { expiresIn: '20m' });
-        const refreshToken = jwt.sign({ username: isUser.name, role: isUser.role }, refreshTokenSecret);
-        refreshTokens.push(refreshToken);
-
-        res.json({
-            accessToken,
-            refreshToken,
-            'role':isUser.role,
-            'user':isUser.name,
-        });
-      }
-     else {
-        res.status(404).send('Username or password incorrect');
-    } 
-
   });
   app.post('/token',async (req, res) => {
     const { token } = req.body;
