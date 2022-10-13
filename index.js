@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const jwt = require('jsonwebtoken');
 
 const DB = process.env.DB;
+const SERVER = process.env.SERVER?process.env.SERVER:'';
 
 var PORT = process.env.PORT || process.env.PORT || 3001;
 var HOST = process.env.YOUR_HOST || '0.0.0.0';
@@ -12,7 +13,7 @@ const corsWhitelist = [
     'http://localhost:5000',
     'http://localhost:5001',
     'http://localhost:3000',
-    process.env.SERVER
+     SERVER
 ];
 
 let headers = (req, res, next) => {
